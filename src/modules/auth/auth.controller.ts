@@ -14,19 +14,19 @@ export class AuthController {
   @Inject()
   private readonly authService: AuthService
 
-  @UseGuards(LocalAuthGuard)
-  @Post('/login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto)
-  }
-
-  @Post('/register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto)
-  }
-
-  @Post('/forget')
-  forget(@Body() dto: ForgetPasswordDto) {
-    return this.authService.forget(dto)
-  }
+  // @UseGuards(LocalAuthGuard)
+  // @Post('/login')
+  // login(@Body() dto: LoginDto) {
+  //   return this.authService.login(dto)
+  // }
+  //
+  // @Post('/register')
+  // register(@Body() dto: RegisterDto) {
+  //   return this.authService.register(dto)
+  // }
+  //
+  // @Post('/forget')
+  // forget(@Body() dto: ForgetPasswordDto) {
+  //   return this.authService.forget(dto)
+  // }
 }
