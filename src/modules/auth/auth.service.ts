@@ -13,6 +13,4 @@ export class AuthService {
     private readonly appConfig: AppConfig,
     private readonly prisma: PrismaService,
   ) {}
-
-
 }
