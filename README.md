@@ -1,15 +1,19 @@
 ## 安装
 ```bash
-
+bun i
 ```
 
+## 配置mysql
+- port 3306
+- 数据库名：sex
+
+## 执行prisma
 ```bash
-1. 用Bun安装
-bun i
-2. 配置好postgresql
-创建数据库CREATE DATABASE hfutbook;
-3. 
 prisma migrate dev --name init
 bunx prisma generate
-4. npm run start:dev
+```
+
+## 启动
+```bash
+bun run start:dev
 ```
