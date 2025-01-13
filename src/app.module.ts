@@ -9,6 +9,7 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { ScheduleModule } from '@nestjs/schedule'
 import { CommonModule } from './common/common.module'
 import { AuthModule } from '@/modules/auth/auth.module'
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AuthModule } from '@/modules/auth/auth.module'
     ScheduleModule.forRoot(),
     CommonModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
