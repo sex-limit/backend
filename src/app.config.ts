@@ -16,4 +16,8 @@ export class AppConfig {
     ttl: number
     limit: number
   }
+
+  app!: {
+    clientId: string
+  }
 }

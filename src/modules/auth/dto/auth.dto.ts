@@ -1,30 +1,29 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator'
-import { AuthDto, StudentIdDto } from '@/modules/auth/dto/studentId.dto'
-import { Limit } from '@/constants/limit'
+import { AuthType } from '@/common/enums/Auth.enum'
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  ValidateNested,
+} from 'class-validator'
 
-export class LoginDto extends AuthDto {}
-
-export class RegisterDto extends AuthDto {
-  @Length(Limit.user.minUsernameLength, Limit.user.maxUsernameLength, {
-    message: `用户名长度只能为${Limit.user.minUsernameLength}-${Limit.user.maxUsernameLength}`,
-  })
+export class AppleLoginDto {
   @IsString()
-  username: string
+  identityToken: string
 
-  @IsString()
-  @Length(6, 30)
-  hfutPassword: string
+  @IsPositive()
+  @IsNumber()
+  realUserStatus: number
 }
 
-export class ForgetPasswordDto extends StudentIdDto {
-  @IsString()
-  @Length(6, 30)
-  hfutPassword: string
+export class LoginDto {
+  @IsEnum(AuthType)
+  type: AuthType
 
-  @IsNotEmpty()
-  @Length(6, 20, {
-    message: '密码只能为6-20位长度',
-  })
-  @IsString()
-  password: string
+  @ValidateNested()
+  @IsOptional()
+  apple?: AppleLoginDto
 }
+
+export class RegisterDto {}

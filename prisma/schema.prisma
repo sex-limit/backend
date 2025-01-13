@@ -9,26 +9,38 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   id Int @id @default(autoincrement())
 
-  username String
-  password String
-  avatar   String
-  gender   Gender
-  role     Role   @default(User)
+  username  String
+  avatar    String
+  ipAddress String
+  desc      String?
+  gender    Gender?
+  role      Role    @default(User)
 
   // relations
+  apple AppleUser?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([id, username])
   @@index([id, username])
+}
+
+model AppleUser {
+  id String @id
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {

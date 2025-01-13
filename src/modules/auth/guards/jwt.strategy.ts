@@ -17,17 +17,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  async validate(payload: { studentId: number }) {
-  //   const { studentId } = payload
-  //
-  //   const user = await this.prisma.user.findFirst({
-  //     where: { studentId },
-  //   })
-  //
-  //   if (!user) {
-  //     throw new UnauthorizedException('用户不存在')
-  //   }
-  //
-  //   return payload
+  async validate(payload: { id: number }) {
+    const { id } = payload
+
+    const user = await this.prisma.user.findFirst({
+      where: { id },
+    })
+
+    if (!user) {
+      throw new UnauthorizedException('用户不存在')
+    }
+  
+    return payload
   }
 }
