@@ -1,0 +1,45 @@
+model Plan {
+  id          String @id @default(uuid())
+  coverAvatar String
+  color       String
+  title       String
+  desc        String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  everdayShouldCheckTimes Int              @default(1)
+  planDayChecked          PlanDayChecked[]
+  posts                   Post[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([id, userId])
+  @@index([id, userId])
+}
+
+model PlanDayChecked {
+  id     String @id @default(uuid())
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  planCheckStatus PlanCheckStatusEnum
+  checkedTimes    Int                 @default(0)
+
+  year      Int      @default(dbgenerated("date_part('year', date)"))
+  date      DateTime
+  status    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post Post?
+
+  @@unique([id, planId, date])
+  @@index([id, planId, date])
+}
+
+enum PlanCheckStatusEnum {
+  Positive
+  Negative
+}
