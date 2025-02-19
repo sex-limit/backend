@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { JwtStrategy } from '@/modules/auth/guards/jwt.strategy'
 import { AppConfig } from '@/app.config'
 import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options.interface'
+import { PlanModule } from '../plan/plan.module'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options
       },
       inject: [AppConfig],
     }),
+    PlanModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, LocalAuthGuard, JwtStrategy],

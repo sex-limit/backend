@@ -6,5 +6,6 @@ import { IsPlanExistImpl } from './dto/utils.dto'
 @Module({
   controllers: [PlanController],
   providers: [PlanService, IsPlanExistImpl],
+  exports: [PlanService],
 })
 export class PlanModule {}

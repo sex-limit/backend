@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 
 import { JwtService } from '@nestjs/jwt'
 import { AppConfig } from '@/app.config'
@@ -10,9 +10,13 @@ import { getIpAddress } from '@/common/utils/ip'
 import { createResponse } from '@/utils/create'
 import { User } from '@prisma/client'
 import { Nullable } from '@/common/types/utils'
+import { PlanService } from '@/modules/plan/plan.service'
 
 @Injectable()
 export class AuthService {
+  @Inject()
+  private readonly planService: PlanService
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly appConfig: AppConfig,
