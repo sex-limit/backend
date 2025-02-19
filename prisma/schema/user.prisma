@@ -11,11 +11,12 @@ model User {
   comments  Comment[]
   replies   Reply[]
 
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
   userLikePosts    UserLikePosts[]
   UserLikeComments UserLikeComments[]
   UserLikeReplies  UserLikeReplies[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([id])
   @@index([id, username])
@@ -43,6 +44,7 @@ model UserLikePosts {
   user   User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([id])
   @@index([postId, userId])
@@ -58,6 +60,7 @@ model UserLikeComments {
   user   User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([id])
   @@index([commentId, userId])

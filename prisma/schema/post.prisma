@@ -1,8 +1,6 @@
 model Post {
-  id        String   @id @default(uuid())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id      String @id @default(uuid())
+  content String @db.Text
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
@@ -15,6 +13,9 @@ model Post {
 
   comments      Comment[]
   userLikePosts UserLikePosts[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([id])
   @@index([id, userId, content, planId, planDayCheckedId])

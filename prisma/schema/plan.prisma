@@ -24,12 +24,14 @@ model PlanDayChecked {
   planId String
   plan   Plan   @relation(fields: [planId], references: [id])
 
-  planCheckStatus PlanCheckStatusEnum
-  checkedTimes    Int                 @default(0)
+  checkedTimes Int @default(0)
 
-  year      Int      @default(dbgenerated("date_part('year', date)"))
-  date      DateTime
-  status    Boolean
+  date   DateTime
+  year   Int
+  month  Int
+  day    Int
+  status PlanCheckStatusEnum
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
