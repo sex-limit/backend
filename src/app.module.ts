@@ -9,7 +9,8 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { ScheduleModule } from '@nestjs/schedule'
 import { CommonModule } from './common/common.module'
 import { AuthModule } from '@/modules/auth/auth.module'
-import { UserModule } from './modules/user/user.module';
+import { UserModule } from './modules/user/user.module'
+import { PlanModule } from './modules/plan/plan.module'
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserModule } from './modules/user/user.module';
     CommonModule,
     AuthModule,
     UserModule,
+    PlanModule,
   ],
   controllers: [AppController],
   providers: [AppService],
