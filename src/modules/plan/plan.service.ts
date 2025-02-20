@@ -1,26 +1,14 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { CheckInDto } from './dto/check-in.dto'
 import { PrismaService } from 'nestjs-prisma'
-import { IUser } from '@/app'
 import { createResponse } from '@/utils/create'
 
 @Injectable()
 export class PlanService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async checkIn(checkInDto: CheckInDto, reqUser: IUser) {
+  async checkIn(checkInDto: CheckInDto) {
     const { planId, status } = checkInDto
-
-    const plan = await this.prisma.plan.findUnique({
-      where: {
-        id: planId,
-        userId: reqUser.id,
-      },
-    })
 
     const date = new Date()
     const year = date.getFullYear()
@@ -37,8 +25,18 @@ export class PlanService {
       },
     })
 
-    // 如果打卡不存在，创建新的打卡记录
-    if (!existingCheck) {
+    if (existingCheck) {
+      await this.prisma.planDayChecked.update({
+        where: {
+          id: existingCheck.id,
+        },
+        data: {
+          status,
+          checkedTimes: existingCheck.checkedTimes + 1,
+        },
+      })
+    } else {
+      // 如果打卡不存在，创建新的打卡记录
       await this.prisma.planDayChecked.create({
         data: {
           year,
@@ -52,16 +50,6 @@ export class PlanService {
               id: planId,
             },
           },
-        },
-      })
-    } else {
-      await this.prisma.planDayChecked.update({
-        where: {
-          id: existingCheck.id,
-        },
-        data: {
-          status,
-          checkedTimes: existingCheck.checkedTimes + 1,
         },
       })
     }

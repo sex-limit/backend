@@ -8,7 +8,7 @@ import { AuthType } from '@/common/enums/Auth.enum'
 import { AppleIdTokenType, verifyIdToken } from 'apple-signin-auth'
 import { getIpAddress } from '@/common/utils/ip'
 import { createResponse } from '@/utils/create'
-import { User } from '@prisma/client'
+import { PlanColor, PlanOfficalType, User } from '@prisma/client'
 import { Nullable } from '@/common/types/utils'
 import { PlanService } from '@/modules/plan/plan.service'
 
@@ -70,7 +70,7 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        username: 'Apple用户',
+        username: 'Apple',
         avatar: `https://api.dicebear.com/9.x/dylan/svg?seed=${Math.random()}`,
         apple: {
           create: {
@@ -78,6 +78,14 @@ export class AuthService {
           },
         },
         ipAddress: ipAddress.ip_location,
+        plans: {
+          create: {
+            officalPlanType: PlanOfficalType.SexLimit,
+            color: PlanColor.Green,
+            title: '戒🦌',
+            desc: '计划还没有介绍哦',
+          },
+        },
       },
     })
 

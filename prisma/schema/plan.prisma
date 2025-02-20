@@ -1,14 +1,17 @@
 model Plan {
-  id          String @id @default(uuid())
-  coverAvatar String
-  color       String
+  id          String    @id @default(uuid())
+  coverAvatar String?
+  coverEmoji  String    @default("🦌")
+  color       PlanColor @default(Green)
   title       String
   desc        String
+
+  officalPlanType PlanOfficalType @default(NotOffical)
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
 
-  everdayShouldCheckTimes Int              @default(1)
+  everdayShouldCheckTimes Int              @default(10)
   planDayChecked          PlanDayChecked[]
   posts                   Post[]
 
@@ -44,4 +47,13 @@ model PlanDayChecked {
 enum PlanCheckStatusEnum {
   Positive
   Negative
+}
+
+enum PlanOfficalType {
+  SexLimit
+  NotOffical
+}
+
+enum PlanColor {
+  Green
 }
