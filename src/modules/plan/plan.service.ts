@@ -4,13 +4,14 @@ import { PrismaService } from 'nestjs-prisma'
 import { createResponse } from '@/utils/create'
 import { IUser } from '@/app'
 import { GetPlanDto } from './dto/plan.dto'
+import { BadRequestException, ConflictException } from '@nestjs/common'
 
 @Injectable()
 export class PlanService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async checkIn(checkInDto: CheckInDto) {
-    const { planId, status } = checkInDto
+  async checkIn(dto: CheckInDto, reqUser: IUser) {
+    const { planId, status, quickPost, checkTimes = 0 } = dto
 
     const date = new Date()
     const year = date.getFullYear()
@@ -20,21 +21,35 @@ export class PlanService {
     // 检查今天是否已经打卡
     const existingCheck = await this.prisma.planDayChecked.findFirst({
       where: {
-        planId: checkInDto.planId,
+        planId,
         year,
         month,
         day,
       },
+      include: {
+        plan: {
+          select: {
+            everdayShouldCheckTimes: true,
+          },
+        },
+      },
     })
 
     if (existingCheck) {
+      const isOverCheckedTimes =
+        checkTimes > existingCheck.plan.everdayShouldCheckTimes
+
+      if (isOverCheckedTimes) {
+        throw new ConflictException('今日已达到打卡上限')
+      }
+
       await this.prisma.planDayChecked.update({
         where: {
           id: existingCheck.id,
         },
         data: {
           status,
-          checkedTimes: existingCheck.checkedTimes + 1,
+          checkedTimes: checkTimes,
         },
       })
     } else {
@@ -46,7 +61,22 @@ export class PlanService {
           day,
           status,
           date,
-          checkedTimes: 1,
+          checkedTimes: checkTimes,
+          ...(quickPost
+            ? {
+                post: {
+                  create: {
+                    user: {
+                      connect: {
+                        id: reqUser.id,
+                      },
+                    },
+                    content: quickPost.content,
+                    imgs: quickPost.img ? [quickPost.img] : [],
+                  },
+                },
+              }
+            : {}),
           plan: {
             connect: {
               id: planId,

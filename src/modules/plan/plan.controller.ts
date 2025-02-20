@@ -10,8 +10,8 @@ export class PlanController {
   constructor(private readonly planService: PlanService) {}
 
   @Post('/check-in')
-  async checkIn(@Body() checkInDto: CheckInDto) {
-    return this.planService.checkIn(checkInDto)
+  async checkIn(@Body() checkInDto: CheckInDto, @User() user: IUser) {
+    return this.planService.checkIn(checkInDto, user)
   }
 
   @Get('/plan')
