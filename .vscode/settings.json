@@ -4,6 +4,8 @@
   "prettier.enable": true,
   "editor.formatOnSave": true,
 
+  "files.autoSave": "afterDelay",
+
   // Auto fix
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
