@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { CheckInDto } from './dto/check-in.dto'
 import { PrismaService } from 'nestjs-prisma'
 import { createResponse } from '@/utils/create'
+import { IUser } from '@/app'
+import { GetPlanDto } from './dto/plan.dto'
 
 @Injectable()
 export class PlanService {
@@ -55,5 +57,11 @@ export class PlanService {
     }
 
     return createResponse('打卡成功')
+  }
+
+  async getPlan(dto: GetPlanDto, user: IUser) {
+    const plans = await this.prisma.plan.findFirst()
+
+    return createResponse('获取成功', plans)
   }
 }
