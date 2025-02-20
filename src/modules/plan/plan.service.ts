@@ -90,7 +90,18 @@ export class PlanService {
   }
 
   async getPlan(dto: GetPlanDto, user: IUser) {
-    const plans = await this.prisma.plan.findFirst()
+    const plans = await this.prisma.plan.findFirst({
+      where: {
+        id: dto.planId,
+      },
+      include: {
+        planDayChecked: {
+          where: {
+            year: 2025,
+          },
+        },
+      },
+    })
 
     return createResponse('获取成功', plans)
   }

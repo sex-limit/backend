@@ -3,7 +3,7 @@ model User {
   username  String
   avatar    String
   ipAddress String
-  desc      String?
+  desc      String     @default("还没有介绍哦~")
   role      Role       @default(User)
   posts     Post[]
   apple     AppleUser?

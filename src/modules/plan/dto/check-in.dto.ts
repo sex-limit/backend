@@ -9,21 +9,43 @@ import {
 } from 'class-validator'
 import { PlanCheckStatusEnum } from '@prisma/client'
 import { IsPlanExist } from './utils.dto'
+import { ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
 
 class CheckInQuickPost {
+  @ApiProperty({
+    description: '快速发布的动态内容',
+    example: '今天的打卡状态很好！',
+  })
   @IsString()
   content: string
 
+  @ApiProperty({
+    description: '快速发布的图片URL',
+    example: 'https://example.com/image.jpg',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   img?: string
 }
 
 export class CheckInDto {
+  @ApiProperty({
+    description: '计划ID',
+    example: 'uuid-of-plan',
+  })
   @IsPlanExist()
   @IsString()
   planId: string
 
+  @ApiProperty({
+    description: '打卡次数',
+    minimum: 1,
+    maximum: 10,
+    default: 1,
+    required: false,
+  })
   @Max(10)
   @Min(1)
   @IsNumber({
@@ -34,10 +56,21 @@ export class CheckInDto {
   @IsOptional()
   checkTimes?: number
 
+  @ApiProperty({
+    description: '打卡状态',
+    enum: PlanCheckStatusEnum,
+    example: PlanCheckStatusEnum.Positive,
+  })
   @IsEnum(PlanCheckStatusEnum)
   status: PlanCheckStatusEnum
 
+  @ApiProperty({
+    description: '快速发布动态',
+    type: CheckInQuickPost,
+    required: false,
+  })
   @ValidateNested()
+  @Type(() => CheckInQuickPost)
   @IsOptional()
   quickPost?: CheckInQuickPost
 }

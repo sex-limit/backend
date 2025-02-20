@@ -8,7 +8,7 @@ import { AuthType } from '@/common/enums/Auth.enum'
 import { AppleIdTokenType, verifyIdToken } from 'apple-signin-auth'
 import { getIpAddress } from '@/common/utils/ip'
 import { createResponse } from '@/utils/create'
-import { PlanColor, PlanOfficalType, User } from '@prisma/client'
+import { AppleUser, PlanColor, PlanOfficalType, User } from '@prisma/client'
 import { Nullable } from '@/common/types/utils'
 import { PlanService } from '@/modules/plan/plan.service'
 
@@ -29,7 +29,7 @@ export class AuthService {
     let user: Nullable<User> = null
 
     if (type === AuthType.Apple) {
-      user = (await this.appleLogin(apple!, ip)) as unknown as User
+      user = (await this.appleLogin(apple!, ip)) as User
     }
 
     if (!user) {
@@ -37,7 +37,10 @@ export class AuthService {
     }
 
     return createResponse('登录成功', {
-      token: this.signToken(user as User),
+      token: this.signToken({
+        type,
+        user,
+      }),
     })
   }
 
@@ -48,21 +51,24 @@ export class AuthService {
       throw new BadRequestException('苹果账号异常')
     }
 
-    const appleUser = await verifyIdToken(identityToken, {
+    const appleVerify = await verifyIdToken(identityToken, {
       audience: this.appConfig.app.clientId,
     })
 
-    const user = await this.prisma.appleUser.findFirst({
+    const appleUser = await this.prisma.appleUser.findFirst({
       where: {
-        id: appleUser.sub,
+        id: appleVerify.sub,
+      },
+      include: {
+        user: true,
       },
     })
 
-    if (!user) {
-      return this.appleRegister(appleUser, ip)
+    if (!appleUser) {
+      return this.appleRegister(appleVerify, ip)
     }
 
-    return user
+    return appleUser.user
   }
 
   async appleRegister(params: AppleIdTokenType, ip: string) {
@@ -92,7 +98,7 @@ export class AuthService {
     return user
   }
 
-  signToken(user: User) {
-    return this.jwtService.sign({ id: user.id })
+  signToken(options: { type: AuthType; user: User }) {
+    return this.jwtService.sign({ type: options.type, id: options.user.id })
   }
 }
