@@ -6,11 +6,13 @@ import {
   IsNumber,
   Max,
   Min,
+  IsDate,
+  Validate,
+  IsDateString,
 } from 'class-validator'
 import { PlanCheckStatusEnum } from '@prisma/client'
 import { IsPlanExist } from './utils.dto'
 import { ApiProperty } from '@nestjs/swagger'
-import { Type } from 'class-transformer'
 
 class CheckInQuickPost {
   @ApiProperty({
@@ -70,7 +72,14 @@ export class CheckInDto {
     required: false,
   })
   @ValidateNested()
-  @Type(() => CheckInQuickPost)
   @IsOptional()
   quickPost?: CheckInQuickPost
+
+  // TODO: 限制打卡日期不能早于2025年
+  @ApiProperty({
+    description: '打卡日期，不能早于2025年',
+    example: '2025-01-01',
+  })
+  @IsDateString({})
+  date: string
 }

@@ -3,8 +3,9 @@ import { CheckInDto } from './dto/check-in.dto'
 import { PrismaService } from 'nestjs-prisma'
 import { createResponse } from '@/utils/create'
 import { IUser } from '@/app'
-import { GetPlanDto } from './dto/plan.dto'
+import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
 import { BadRequestException, ConflictException } from '@nestjs/common'
+import { PlanOfficalType } from '@prisma/client'
 
 @Injectable()
 export class PlanService {
@@ -89,20 +90,46 @@ export class PlanService {
     return createResponse('打卡成功')
   }
 
-  async getPlan(dto: GetPlanDto, user: IUser) {
+  async getMySexLimitDetailPlan(dto: GetMySexLimitPlanDto, user: IUser) {
     const plans = await this.prisma.plan.findFirst({
       where: {
-        id: dto.planId,
+        officalPlanType: PlanOfficalType.SexLimit,
+        user: {
+          id: user.id,
+        },
       },
       include: {
         planDayChecked: {
           where: {
-            year: 2025,
+            year: dto.year,
           },
         },
       },
     })
 
     return createResponse('获取成功', plans)
+  }
+
+  async getPlanDetailByYear(dto: GetPlanDetailByYearDto, user: IUser) {
+    const plan = await this.prisma.plan.findUnique({
+      where: {
+        id_userId: {
+          id: dto.planId,
+          userId: user.id,
+        },
+      },
+      include: {
+        planDayChecked: {
+          where: {
+            year: dto.year,
+          },
+          orderBy: {
+            date: 'asc',
+          },
+        },
+      },
+    })
+
+    return createResponse('获取成功', plan)
   }
 }

@@ -3,7 +3,7 @@ import { PlanService } from './plan.service'
 import { CheckInDto } from './dto/check-in.dto'
 import { User } from '@/common/decorator/user.decorator'
 import { IUser } from '@/app'
-import { GetPlanDto } from './dto/plan.dto'
+import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -27,11 +27,26 @@ export class PlanController {
   }
 
   @ApiOperation({
-    summary: '获取计划',
-    description: '获取用户的计划列表',
+    summary: '获取首页戒色计划',
+    description: '首页获取用户的戒色计划',
   })
-  @Get('/my/detail')
-  async getPlan(@Query() query: GetPlanDto, @User() user: IUser) {
-    return this.planService.getPlan(query, user)
+  @Get('/my/sex-limit/detail')
+  async getMySexLimitDetailPlan(
+    @Query() query: GetMySexLimitPlanDto,
+    @User() user: IUser,
+  ) {
+    return this.planService.getMySexLimitDetailPlan(query, user)
+  }
+
+  @ApiOperation({
+    summary: '获取指定计划的年度打卡记录',
+    description: '根据计划ID和年份获取该计划的打卡记录',
+  })
+  @Get('/my/day-checked')
+  async getPlanDetailByYear(
+    @Query() query: GetPlanDetailByYearDto,
+    @User() user: IUser,
+  ) {
+    return this.planService.getPlanDetailByYear(query, user)
   }
 }

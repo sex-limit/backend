@@ -41,7 +41,7 @@ model PlanDayChecked {
   post Post?
 
   @@unique([id, planId, date])
-  @@index([id, planId, date])
+  @@index([id, planId, year, date])
 }
 
 enum PlanCheckStatusEnum {
