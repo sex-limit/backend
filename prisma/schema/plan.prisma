@@ -6,6 +6,8 @@ model Plan {
   title       String
   desc        String
 
+  school String?
+
   officalPlanType PlanOfficalType @default(NotOffical)
 
   userId Int
@@ -14,6 +16,9 @@ model Plan {
   everdayShouldCheckTimes Int              @default(10)
   planDayChecked          PlanDayChecked[]
   posts                   Post[]
+
+  continuousCheckDay    Int @default(0)
+  maxContinuousCheckDay Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

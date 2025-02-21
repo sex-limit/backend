@@ -1,7 +1,8 @@
 model Post {
-  id      String   @id @default(uuid())
-  content String   @db.Text
-  imgs    String[] @default([])
+  id        String   @id @default(uuid())
+  content   String   @db.Text
+  imgs      String[] @default([])
+  viewCount Int      @default(0)
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
@@ -14,6 +15,8 @@ model Post {
 
   comments      Comment[]
   userLikePosts UserLikePosts[]
+
+  ranks OfficalRankOnPlan[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -6,8 +6,6 @@ import {
   IsNumber,
   Max,
   Min,
-  IsDate,
-  Validate,
   IsDateString,
 } from 'class-validator'
 import { PlanCheckStatusEnum } from '@prisma/client'
@@ -27,9 +25,11 @@ class CheckInQuickPost {
     example: 'https://example.com/image.jpg',
     required: false,
   })
-  @IsString()
+  @IsString({
+    each: true,
+  })
   @IsOptional()
-  img?: string
+  imgs: string[]
 }
 
 export class CheckInDto {

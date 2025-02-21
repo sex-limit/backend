@@ -1,21 +1,22 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common'
+import { Controller, Post, Body, Get, Query, Inject } from '@nestjs/common'
 import { PlanService } from './plan.service'
 import { CheckInDto } from './dto/check-in.dto'
 import { User } from '@/common/decorator/user.decorator'
 import { IUser } from '@/app'
 import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { GetOfficalRankDto } from './dto/rank.dto'
+import { PlanRankService } from './plan-rank.service'
 
 @ApiTags('计划')
 @ApiBearerAuth('JWT-auth')
 @Controller('plan')
 export class PlanController {
-  constructor(private readonly planService: PlanService) {}
+  @Inject()
+  private readonly planService: PlanService
+
+  @Inject()
+  private readonly planRankService: PlanRankService
 
   @Post('/check-in')
   @ApiOperation({
@@ -48,5 +49,14 @@ export class PlanController {
     @User() user: IUser,
   ) {
     return this.planService.getPlanDetailByYear(query, user)
+  }
+
+  @Get('/rank')
+  @ApiOperation({
+    summary: '获取戒色排行榜',
+    description: '获取戒色排行榜',
+  })
+  async getRank(@Query() query: GetOfficalRankDto) {
+    return this.planRankService.getOfficalRank(query)
   }
 }

@@ -6,20 +6,22 @@ import { IUser } from '@/app'
 import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
 import { BadRequestException, ConflictException } from '@nestjs/common'
 import { PlanOfficalType } from '@prisma/client'
+import { GetOfficalRankDto } from './dto/rank.dto'
+import { differenceInCalendarDays } from 'date-fns'
 
+// TODO: 解决榜单问题
 @Injectable()
 export class PlanService {
   constructor(private readonly prisma: PrismaService) {}
 
   async checkIn(dto: CheckInDto, reqUser: IUser) {
-    const { planId, status, quickPost, checkTimes = 0 } = dto
+    const { planId, status, quickPost, checkTimes = 0, date: dtoDate } = dto
 
-    const date = new Date()
+    const date = new Date(dtoDate)
     const year = date.getFullYear()
     const month = date.getMonth() + 1
     const day = date.getDate()
 
-    // 检查今天是否已经打卡
     const existingCheck = await this.prisma.planDayChecked.findFirst({
       where: {
         planId,
@@ -31,6 +33,8 @@ export class PlanService {
         plan: {
           select: {
             everdayShouldCheckTimes: true,
+            maxContinuousCheckDay: true,
+            continuousCheckDay: true,
           },
         },
       },
@@ -44,6 +48,20 @@ export class PlanService {
         throw new ConflictException('今日已达到打卡上限')
       }
 
+      const lastChecked = await this.prisma.planDayChecked.findFirst({
+        where: {
+          planId,
+        },
+        orderBy: {
+          date: 'desc',
+        },
+      })
+
+      const isConstious =
+        differenceInCalendarDays(date, lastChecked?.date!) === 1
+
+      console.log(date, lastChecked!.date)
+
       await this.prisma.planDayChecked.update({
         where: {
           id: existingCheck.id,
@@ -51,6 +69,22 @@ export class PlanService {
         data: {
           status,
           checkedTimes: checkTimes,
+          plan: {
+            update: {
+              id: planId,
+              continuousCheckDay: isConstious
+                ? {
+                    increment: 1,
+                  }
+                : 1,
+              maxContinuousCheckDay: Math.max(
+                existingCheck.plan.maxContinuousCheckDay,
+                isConstious
+                  ? existingCheck.plan.continuousCheckDay + 1
+                  : existingCheck.plan.continuousCheckDay,
+              ),
+            },
+          },
         },
       })
     } else {
@@ -73,7 +107,7 @@ export class PlanService {
                       },
                     },
                     content: quickPost.content,
-                    imgs: quickPost.img ? [quickPost.img] : [],
+                    imgs: quickPost.imgs || [],
                   },
                 },
               }
@@ -86,6 +120,16 @@ export class PlanService {
         },
       })
     }
+
+    await this.prisma.plan.update({
+      where: {
+        id: planId,
+      },
+      data: {
+        continuousCheckDay: 1,
+        maxContinuousCheckDay: 1,
+      },
+    })
 
     return createResponse('打卡成功')
   }
