@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { GetOfficalRankDto } from './dto/rank.dto'
 import { Nullable } from '@/common/types/utils'
-import { Plan } from '@prisma/client'
+import { Plan, PlanCheckStatusEnum } from '@prisma/client'
 import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
@@ -11,17 +11,13 @@ export class PlanRankService {
   async getOfficalRank(dto: GetOfficalRankDto) {
     const { year, month, week, officalType, type } = dto
 
-    let rank: Nullable<Plan> = null
-
-    if (year) {
-      rank = await this.prisma.plan.findFirst({
+    if (type === PlanCheckStatusEnum.Positive) {
+      return this.prisma.plan.findMany({
         where: {
           officalPlanType: officalType,
-          planDayChecked: {
-            some: {
-              year: year.year,
-            },
-          },
+        },
+        orderBy: {
+          postiveCheckedDays: 'desc',
         },
       })
     }

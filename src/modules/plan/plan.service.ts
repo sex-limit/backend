@@ -7,6 +7,7 @@ import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
 import { PlanCheckStatusEnum, PlanOfficalType } from '@prisma/client'
 import { calculateConsecutiveDays } from '@/utils/date/index'
 import { getSetDateArrayAndSort } from '@/utils/date/index'
+import { differenceInDays } from 'date-fns'
 
 // TODO: 解决榜单问题
 @Injectable()
@@ -153,6 +154,28 @@ export class PlanService {
           postiveLongestStartDate:
             postiveConsecutiveDays.longestConsecutive.startDate,
 
+          postiveLongestCheckedDays:
+            differenceInDays(
+              postiveConsecutiveDays.longestConsecutive.endDate,
+              postiveConsecutiveDays.longestConsecutive.startDate,
+            ) + 1,
+          postiveLatestConsutiveCheckedDays:
+            differenceInDays(
+              postiveConsecutiveDays.latestConsecutive.endDate,
+              postiveConsecutiveDays.latestConsecutive.startDate,
+            ) + 1,
+
+          negativeLongestCheckedDays:
+            differenceInDays(
+              negativeConsecutiveDays.longestConsecutive.endDate,
+              negativeConsecutiveDays.longestConsecutive.startDate,
+            ) + 1,
+          negativeLatestConsutiveCheckedDays:
+            differenceInDays(
+              negativeConsecutiveDays.latestConsecutive.endDate,
+              negativeConsecutiveDays.latestConsecutive.startDate,
+            ) + 1,
+
           continuousCheckDay: postiveConsecutiveDays.latestConsecutive.days,
           maxContinuousCheckDay: allCheckedDays.longestConsecutive.days,
         },
@@ -184,12 +207,28 @@ export class PlanService {
           id: user.id,
         },
       },
-      include: {
+      select: {
         planDayChecked: {
           where: {
             year: dto.year,
           },
         },
+        user: true,
+        id: true,
+        coverAvatar: true,
+        coverEmoji: true,
+        color: true,
+        checkedDays: false,
+        postiveLastestConsutiveEndDate: true,
+        postiveLastestConsutiveStartDate: true,
+        postiveLongestEndDate: true,
+        postiveLongestStartDate: true,
+        postiveCheckedDays: false,
+        negativeCheckedDays: false,
+        postiveLatestConsutiveCheckedDays: true,
+        postiveLongestCheckedDays: true,
+        negativeLatestConsutiveCheckedDays: true,
+        negativeLongestCheckedDays: true,
       },
     })
 
@@ -213,6 +252,7 @@ export class PlanService {
             date: 'asc',
           },
         },
+        user: true,
       },
     })
 

@@ -13,15 +13,21 @@ model Plan {
   postiveCheckedDays  DateTime[] @default([])
   negativeCheckedDays DateTime[] @default([])
 
-  postiveLongestStartDate          DateTime?
-  postiveLongestEndDate            DateTime?
-  postiveLastestConsutiveStartDate DateTime?
-  postiveLastestConsutiveEndDate   DateTime?
+  postiveLongestStartDate   DateTime?
+  postiveLongestEndDate     DateTime?
+  postiveLongestCheckedDays Int       @default(0)
 
-  negativeLongestStartDate          DateTime?
-  negativeLongestEndDate            DateTime?
-  negativeLastestConsutiveStartDate DateTime?
-  negativeLastestConsutiveEndDate   DateTime?
+  postiveLastestConsutiveStartDate  DateTime?
+  postiveLastestConsutiveEndDate    DateTime?
+  postiveLatestConsutiveCheckedDays Int       @default(0)
+
+  negativeLongestStartDate   DateTime?
+  negativeLongestEndDate     DateTime?
+  negativeLongestCheckedDays Int       @default(0)
+
+  negativeLastestConsutiveStartDate  DateTime?
+  negativeLastestConsutiveEndDate    DateTime?
+  negativeLatestConsutiveCheckedDays Int       @default(0)
 
   officalPlanType PlanOfficalType @default(NotOffical)
 
