@@ -8,6 +8,21 @@ model Plan {
 
   school String?
 
+  // 打卡日期情况
+  checkedDays         DateTime[] @default([])
+  postiveCheckedDays  DateTime[] @default([])
+  negativeCheckedDays DateTime[] @default([])
+
+  postiveLongestStartDate          DateTime?
+  postiveLongestEndDate            DateTime?
+  postiveLastestConsutiveStartDate DateTime?
+  postiveLastestConsutiveEndDate   DateTime?
+
+  negativeLongestStartDate          DateTime?
+  negativeLongestEndDate            DateTime?
+  negativeLastestConsutiveStartDate DateTime?
+  negativeLastestConsutiveEndDate   DateTime?
+
   officalPlanType PlanOfficalType @default(NotOffical)
 
   userId Int

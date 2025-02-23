@@ -4,10 +4,9 @@ import { PrismaService } from 'nestjs-prisma'
 import { createResponse } from '@/utils/create'
 import { IUser } from '@/app'
 import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
-import { BadRequestException, ConflictException } from '@nestjs/common'
-import { PlanOfficalType } from '@prisma/client'
-import { GetOfficalRankDto } from './dto/rank.dto'
-import { differenceInCalendarDays } from 'date-fns'
+import { PlanCheckStatusEnum, PlanOfficalType } from '@prisma/client'
+import { calculateConsecutiveDays } from '@/utils/date/index'
+import { getSetDateArrayAndSort } from '@/utils/date/index'
 
 // TODO: 解决榜单问题
 @Injectable()
@@ -17,121 +16,164 @@ export class PlanService {
   async checkIn(dto: CheckInDto, reqUser: IUser) {
     const { planId, status, quickPost, checkTimes = 0, date: dtoDate } = dto
 
-    const date = new Date(dtoDate)
-    const year = date.getFullYear()
-    const month = date.getMonth() + 1
-    const day = date.getDate()
+    const checkInDate = new Date(dtoDate)
+    const year = checkInDate.getFullYear()
+    const month = checkInDate.getMonth() + 1
+    const day = checkInDate.getDate()
 
-    const existingCheck = await this.prisma.planDayChecked.findFirst({
-      where: {
-        planId,
-        year,
-        month,
-        day,
-      },
-      include: {
-        plan: {
-          select: {
-            everdayShouldCheckTimes: true,
-            maxContinuousCheckDay: true,
-            continuousCheckDay: true,
-          },
-        },
-      },
-    })
-
-    if (existingCheck) {
-      const isOverCheckedTimes =
-        checkTimes > existingCheck.plan.everdayShouldCheckTimes
-
-      if (isOverCheckedTimes) {
-        throw new ConflictException('今日已达到打卡上限')
-      }
-
-      const lastChecked = await this.prisma.planDayChecked.findFirst({
+    const result = await this.prisma.$transaction(async (t) => {
+      const oldPlan = await t.plan.findFirst({
         where: {
-          planId,
+          id: planId,
         },
-        orderBy: {
-          date: 'desc',
+        select: {
+          checkedDays: true,
+          negativeCheckedDays: true,
+          postiveCheckedDays: true,
+        },
+      })
+      const plan = await t.plan.update({
+        where: {
+          id: planId,
+        },
+        data: {
+          checkedDays: getSetDateArrayAndSort([
+            ...oldPlan!.checkedDays,
+            checkInDate,
+          ]),
+          negativeCheckedDays: getSetDateArrayAndSort(
+            [...oldPlan!.negativeCheckedDays, checkInDate],
+            dto.status === PlanCheckStatusEnum.Positive
+              ? checkInDate
+              : undefined,
+          ),
+          postiveCheckedDays: getSetDateArrayAndSort(
+            [...oldPlan!.postiveCheckedDays, checkInDate],
+            dto.status === PlanCheckStatusEnum.Negative
+              ? checkInDate
+              : undefined,
+          ),
         },
       })
 
-      const isConstious =
-        differenceInCalendarDays(date, lastChecked?.date!) === 1
+      console.log(plan.checkedDays)
 
-      console.log(date, lastChecked!.date)
+      const allCheckedDays = calculateConsecutiveDays(plan.checkedDays)
+      const postiveConsecutiveDays = calculateConsecutiveDays(
+        plan.postiveCheckedDays,
+      )
+      const negativeConsecutiveDays = calculateConsecutiveDays(
+        plan.negativeCheckedDays,
+      )
 
-      await this.prisma.planDayChecked.update({
+      const isDateCheckedInExist = await t.planDayChecked.findFirst({
         where: {
-          id: existingCheck.id,
-        },
-        data: {
-          status,
-          checkedTimes: checkTimes,
           plan: {
-            update: {
-              id: planId,
-              continuousCheckDay: isConstious
-                ? {
-                    increment: 1,
-                  }
-                : 1,
-              maxContinuousCheckDay: Math.max(
-                existingCheck.plan.maxContinuousCheckDay,
-                isConstious
-                  ? existingCheck.plan.continuousCheckDay + 1
-                  : existingCheck.plan.continuousCheckDay,
-              ),
-            },
+            id: planId,
           },
-        },
-      })
-    } else {
-      // 如果打卡不存在，创建新的打卡记录
-      await this.prisma.planDayChecked.create({
-        data: {
           year,
           month,
           day,
-          status,
-          date,
-          checkedTimes: checkTimes,
-          ...(quickPost
-            ? {
-                post: {
-                  create: {
-                    user: {
-                      connect: {
-                        id: reqUser.id,
-                      },
-                    },
-                    content: quickPost.content,
-                    imgs: quickPost.imgs || [],
-                  },
-                },
-              }
-            : {}),
-          plan: {
-            connect: {
-              id: planId,
-            },
-          },
         },
       })
-    }
 
-    await this.prisma.plan.update({
-      where: {
-        id: planId,
-      },
-      data: {
-        continuousCheckDay: 1,
-        maxContinuousCheckDay: 1,
-      },
+      const updatePost = {
+        ...(quickPost
+          ? {
+              post: {
+                create: {
+                  user: {
+                    connect: {
+                      id: reqUser.id,
+                    },
+                  },
+                  content: quickPost.content,
+                  imgs: quickPost.imgs || [],
+                },
+              },
+            }
+          : {}),
+      }
+
+      if (false) {
+        await t.planDayChecked.update({
+          where: {
+            id: isDateCheckedInExist?.id,
+          },
+          data: {
+            status,
+            checkedTimes: checkTimes,
+            plan: {
+              connect: {
+                id: planId,
+              },
+            },
+            ...updatePost,
+          },
+        })
+      } else {
+        await t.planDayChecked.create({
+          data: {
+            year,
+            month,
+            day,
+            status,
+            date: checkInDate,
+            checkedTimes: checkTimes,
+            ...updatePost,
+            plan: {
+              connect: {
+                id: planId,
+              },
+            },
+          },
+        })
+      }
+
+      const result = await t.plan.update({
+        where: {
+          id: planId,
+        },
+        data: {
+          postiveLastestConsutiveEndDate:
+            postiveConsecutiveDays.latestConsecutive.endDate,
+          postiveLastestConsutiveStartDate:
+            postiveConsecutiveDays.latestConsecutive.startDate,
+          negativeLastestConsutiveEndDate:
+            negativeConsecutiveDays.latestConsecutive.endDate,
+          negativeLastestConsutiveStartDate:
+            negativeConsecutiveDays.latestConsecutive.startDate,
+
+          negativeLongestEndDate:
+            negativeConsecutiveDays.longestConsecutive.endDate,
+          negativeLongestStartDate:
+            negativeConsecutiveDays.longestConsecutive.startDate,
+          postiveLongestEndDate:
+            postiveConsecutiveDays.longestConsecutive.endDate,
+          postiveLongestStartDate:
+            postiveConsecutiveDays.longestConsecutive.startDate,
+
+          continuousCheckDay: postiveConsecutiveDays.latestConsecutive.days,
+          maxContinuousCheckDay: allCheckedDays.longestConsecutive.days,
+        },
+        select: {
+          postiveLastestConsutiveEndDate: true,
+          postiveLastestConsutiveStartDate: true,
+          negativeLastestConsutiveEndDate: true,
+          negativeLastestConsutiveStartDate: true,
+          postiveLongestEndDate: true,
+          postiveLongestStartDate: true,
+          negativeLongestEndDate: true,
+          negativeLongestStartDate: true,
+          continuousCheckDay: true,
+          maxContinuousCheckDay: true,
+        },
+      })
+
+      return result
     })
 
-    return createResponse('打卡成功')
+    return createResponse('打卡成功', result)
   }
 
   async getMySexLimitDetailPlan(dto: GetMySexLimitPlanDto, user: IUser) {
