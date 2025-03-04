@@ -220,6 +220,8 @@ export class PlanService {
         coverAvatar: true,
         coverEmoji: true,
         color: true,
+        title: true,
+        desc: true,
         checkedDays: false,
         postiveLastestConsutiveEndDate: true,
         postiveLastestConsutiveStartDate: true,
@@ -254,6 +256,9 @@ export class PlanService {
           },
           orderBy: {
             date: 'asc',
+          },
+          include: {
+            post: true,
           },
         },
         user: true,
