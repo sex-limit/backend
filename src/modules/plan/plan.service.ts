@@ -8,6 +8,7 @@ import { PlanCheckStatusEnum, PlanOfficalType } from '@prisma/client'
 import { calculateConsecutiveDays } from '@/utils/date/index'
 import { getSetDateArrayAndSort } from '@/utils/date/index'
 import { differenceInDays } from 'date-fns'
+import { GetDayCheckedDetailDto } from './dto/day-checked.dto'
 
 // TODO: 解决榜单问题
 @Injectable()
@@ -57,8 +58,6 @@ export class PlanService {
         },
       })
 
-      console.log(plan.checkedDays)
-
       const allCheckedDays = calculateConsecutiveDays(plan.checkedDays)
       const postiveConsecutiveDays = calculateConsecutiveDays(
         plan.postiveCheckedDays,
@@ -96,7 +95,7 @@ export class PlanService {
           : {}),
       }
 
-      if (false) {
+      if (isDateCheckedInExist) {
         await t.planDayChecked.update({
           where: {
             id: isDateCheckedInExist?.id,
@@ -212,6 +211,9 @@ export class PlanService {
           where: {
             year: dto.year,
           },
+          include: {
+            post: true,
+          },
         },
         user: true,
         id: true,
@@ -229,18 +231,20 @@ export class PlanService {
         postiveLongestCheckedDays: true,
         negativeLatestConsutiveCheckedDays: true,
         negativeLongestCheckedDays: true,
+        negativeLastestConsutiveEndDate: true,
+        negativeLastestConsutiveStartDate: true,
       },
     })
 
     return createResponse('获取成功', plans)
   }
 
-  async getPlanDetailByYear(dto: GetPlanDetailByYearDto, user: IUser) {
+  async getPlanDetailByYear(dto: GetPlanDetailByYearDto, reqUser: IUser) {
     const plan = await this.prisma.plan.findUnique({
       where: {
-        id_userId: {
-          id: dto.planId,
-          userId: user.id,
+        id: dto.planId,
+        user: {
+          id: reqUser.id,
         },
       },
       include: {
@@ -257,5 +261,20 @@ export class PlanService {
     })
 
     return createResponse('获取成功', plan)
+  }
+
+  async getDayCheckedDetail(dto: GetDayCheckedDetailDto, reqUser: IUser) {
+    const { id } = dto
+
+    const result = await this.prisma.plan.findFirst({
+      where: {
+        id,
+        user: {
+          id: reqUser.id,
+        },
+      },
+    })
+
+    return createResponse('获取成功', result)
   }
 }

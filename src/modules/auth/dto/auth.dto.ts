@@ -43,7 +43,6 @@ export class LoginDto {
     required: false,
   })
   @ValidateNested()
-  @Type(() => AppleLoginDto)
   @IsOptional()
   apple?: AppleLoginDto
 }

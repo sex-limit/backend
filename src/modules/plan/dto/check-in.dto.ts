@@ -7,6 +7,7 @@ import {
   Max,
   Min,
   IsDateString,
+  Validate,
 } from 'class-validator'
 import { PlanCheckStatusEnum } from '@prisma/client'
 import { IsPlanExist } from './utils.dto'
@@ -79,6 +80,9 @@ export class CheckInDto {
   @ApiProperty({
     description: '打卡日期，不能早于2025年',
     example: '2025-01-01',
+  })
+  @Validate((value: string) => {
+    return new Date(value).getFullYear() >= 2025
   })
   @IsDateString({})
   date: string

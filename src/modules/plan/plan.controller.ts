@@ -7,6 +7,7 @@ import { GetMySexLimitPlanDto, GetPlanDetailByYearDto } from './dto/plan.dto'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { GetOfficalRankDto } from './dto/rank.dto'
 import { PlanRankService } from './plan-rank.service'
+import { GetDayCheckedDetailDto } from './dto/day-checked.dto'
 
 @ApiTags('计划')
 @ApiBearerAuth('JWT-auth')
@@ -58,5 +59,12 @@ export class PlanController {
   })
   async getRank(@Query() query: GetOfficalRankDto) {
     return this.planRankService.getOfficalRank(query)
+  }
+
+  async getDayCheckedDetail(
+    @Query() query: GetDayCheckedDetailDto,
+    @User() user: IUser,
+  ) {
+    return this.planService.getDayCheckedDetail(query, user)
   }
 }
