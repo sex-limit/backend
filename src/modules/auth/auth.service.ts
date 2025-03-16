@@ -8,20 +8,17 @@ import { AuthType } from '@/common/enums/Auth.enum'
 import { AppleIdTokenType, verifyIdToken } from 'apple-signin-auth'
 import { getIpAddress } from '@/common/utils/ip'
 import { createResponse } from '@/utils/create'
-import { AppleUser, PlanColor, PlanOfficalType, User } from '@prisma/client'
+import { AppleUser, User } from '@prisma/client'
 import { Nullable } from '@/common/types/utils'
-import { PlanService } from '@/modules/plan/plan.service'
 
 @Injectable()
 export class AuthService {
-  @Inject()
-  private readonly planService: PlanService
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly appConfig: AppConfig,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto, ip: string) {
     const { type, apple } = dto
@@ -84,14 +81,12 @@ export class AuthService {
           },
         },
         ipAddress: ipAddress.ip_location,
-        plans: {
+        plan: {
           create: {
-            officalPlanType: PlanOfficalType.SexLimit,
-            color: PlanColor.Green,
-            title: '戒🦌',
-            desc: '计划还没有介绍哦',
-          },
-        },
+            bestDays: 0,
+            startTime: new Date(),
+          }
+        }
       },
     })
 

@@ -1,0 +1,6 @@
+enum ChallengeStatus {
+  NotStarted
+  InProgress
+  Completed
+  Failed
+}

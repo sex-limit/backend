@@ -1,12 +1,9 @@
-import { Module } from '@nestjs/common'
-import { PlanController } from './plan.controller'
-import { PlanService } from './plan.service'
-import { PlanRankService } from './plan-rank.service'
-import { IsPlanExistImpl } from './dto/utils.dto'
+import { Module } from '@nestjs/common';
+import { PlanController } from './plan.controller';
+import { PlanService } from './plan.service';
 
 @Module({
   controllers: [PlanController],
-  providers: [PlanService, PlanRankService, IsPlanExistImpl],
-  exports: [PlanService, PlanRankService],
+  providers: [PlanService]
 })
-export class PlanModule {}
+export class PlanModule { }

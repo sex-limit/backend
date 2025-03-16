@@ -3,3 +3,8 @@ enum Role {
   User
   Banned
 }
+
+enum Gender {
+  Male
+  Female
+}

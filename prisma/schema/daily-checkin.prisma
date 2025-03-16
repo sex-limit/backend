@@ -1,0 +1,7 @@
+model DailyCheckIn {
+  id String @id @default(uuid())
+
+  date DateTime @default(now())
+
+  stillStrongCount Int @default(0)
+}

@@ -1,85 +1,36 @@
 model Plan {
-  id          String    @id @default(uuid())
-  coverAvatar String?
-  coverEmoji  String    @default("🦌")
-  color       PlanColor @default(Green)
-  title       String
-  desc        String
+  id String @id @default(uuid())
 
-  school String?
+  bestDays       Int       @default(0)
+  startTime      DateTime
+  lastPlegedTime DateTime?
 
-  // 打卡日期情况
-  checkedDays         DateTime[] @default([])
-  postiveCheckedDays  DateTime[] @default([])
-  negativeCheckedDays DateTime[] @default([])
-
-  postiveLongestStartDate   DateTime?
-  postiveLongestEndDate     DateTime?
-  postiveLongestCheckedDays Int       @default(0)
-
-  postiveLastestConsutiveStartDate  DateTime?
-  postiveLastestConsutiveEndDate    DateTime?
-  postiveLatestConsutiveCheckedDays Int       @default(0)
-
-  negativeLongestStartDate   DateTime?
-  negativeLongestEndDate     DateTime?
-  negativeLongestCheckedDays Int       @default(0)
-
-  negativeLastestConsutiveStartDate  DateTime?
-  negativeLastestConsutiveEndDate    DateTime?
-  negativeLatestConsutiveCheckedDays Int       @default(0)
-
-  officalPlanType PlanOfficalType @default(NotOffical)
-
-  userId Int
   user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  everdayShouldCheckTimes Int              @default(10)
-  planDayChecked          PlanDayChecked[]
-  posts                   Post[]
-
-  continuousCheckDay    Int @default(0)
-  maxContinuousCheckDay Int @default(0)
+  quickNotes QuickNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([id, userId])
-  @@index([id, userId])
+  @@unique([userId])
+  @@index([id])
 }
 
-model PlanDayChecked {
-  id     String @id @default(uuid())
-  planId String
+model QuickNote {
+  id String @id @default(uuid())
+
   plan   Plan   @relation(fields: [planId], references: [id])
+  planId String
 
-  checkedTimes Int @default(0)
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  date   DateTime
-  year   Int
-  month  Int
-  day    Int
-  status PlanCheckStatusEnum
+  content String @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  post Post?
-
-  @@unique([id, planId, date])
-  @@index([id, planId, year, date])
-}
-
-enum PlanCheckStatusEnum {
-  Positive
-  Negative
-}
-
-enum PlanOfficalType {
-  SexLimit
-  NotOffical
-}
-
-enum PlanColor {
-  Green
+  @@unique([id])
+  @@index([planId])
 }
